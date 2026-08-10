@@ -1,0 +1,39 @@
+{
+  "name": "xmsr",
+  "version": "0.1.0",
+  "description": "星梦超分工具 - 图片/视频超分与插帧桌面工具",
+  "main": "./out/main/index.js",
+  "author": "XMSR",
+  "license": "Apache-2.0",
+  "appId": "com.xmsr.app",
+  "productName": "星梦超分工具",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "build:win": "electron-vite build && electron-builder --win",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
+    "@element-plus/icons-vue": "^2.3.1",
+    "@fortawesome/fontawesome-free": "^6.5.2",
+    "element-plus": "^2.7.0",
+    "pinia": "^2.1.7",
+    "sharp": "^0.35.3",
+    "systeminformation": "^5.33.1",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.2.0",
+    "vite": "^5.2.0"
+  },
+  "allowScripts": {
+    "electron@30.5.1": true
+  }
+}
