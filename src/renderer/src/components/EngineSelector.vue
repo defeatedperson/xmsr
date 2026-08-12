@@ -70,6 +70,13 @@ function pickDefaultScale(scales) {
   return scales.includes(2) ? 2 : scales[0]
 }
 
+// 倍率校正：旧预设/外部状态可能带入当前模型不支持的倍率（如固定 4x 模型 + 2x），统一纠正
+function fixScaleIfUnsupported() {
+  if (currentModel.value && !currentModel.value.scales.includes(scale.value)) {
+    scale.value = pickDefaultScale(currentModel.value.scales)
+  }
+}
+
 function modelLabel(m) {
   if (engineId.value === 'realcugan') {
     const map = {
@@ -89,6 +96,8 @@ async function loadEngines() {
     const first = engines.value[0]
     if (first) onEngineChange(first.id)
   }
+  // 预设可能在引擎列表加载前就注入了非法倍率，加载完成后校正一次
+  fixScaleIfUnsupported()
 }
 
 function onEngineChange(id) {
@@ -104,11 +113,7 @@ function onEngineChange(id) {
 }
 
 // 切换模型时，若当前倍率不被新模型支持，则校正到合适的倍率
-watch(model, () => {
-  if (currentModel.value && !currentModel.value.scales.includes(scale.value)) {
-    scale.value = pickDefaultScale(currentModel.value.scales)
-  }
-})
+watch(model, fixScaleIfUnsupported)
 
 // 同步到父组件
 watch([engineId, model, scale], () => {
@@ -138,6 +143,7 @@ watch(
     if (mv.scale && mv.scale !== scale.value) {
       scale.value = mv.scale
     }
+    fixScaleIfUnsupported()
   },
   { deep: true }
 )
