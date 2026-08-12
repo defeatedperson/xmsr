@@ -143,8 +143,9 @@ function listModels(engineId) {
   try {
     if (def.modelNaming === 'model-file') {
       // realesrgan：xxx-xN.param → 模型名 xxx，倍率 N
-      // 无倍率后缀的固定倍率模型（如 realesrgan-x4plus.param）也列出，
-      // exe 内部会按目标倍率缩放输出，因此视为支持引擎声明的全部倍率
+      // 无倍率后缀的固定倍率模型（如 realesrgan-x4plus.param）只暴露原生倍率：
+      // exe 对"非原生倍率"走 4x 推理后缩放的路径，存在上游 tile 错位 bug
+      // （xinntao/Real-ESRGAN#247、Real-ESRGAN-ncnn-vulkan#73），不能暴露
       const modelsDir = join(engineDir.dir, def.modelsSub)
       if (!existsSync(modelsDir)) return []
       const params = readdirSync(modelsDir).filter((f) => f.endsWith('.param'))
@@ -157,7 +158,8 @@ function listModels(engineId) {
           if (!map.has(name)) map.set(name, new Set())
           map.get(name).add(parseInt(scale, 10))
         } else if (!map.has(base)) {
-          map.set(base, new Set(def.supportedScales))
+          const native = parseNativeScale(base)
+          map.set(base, new Set(native ? [native] : def.supportedScales))
         }
       }
       return [...map.entries()].map(([name, scales]) => ({
@@ -213,6 +215,16 @@ function listModels(engineId) {
     logger.warn(`枚举 ${engineId} 模型失败:`, e.message)
   }
   return []
+}
+
+/**
+ * 从固定倍率模型名解析原生倍率（如 realesrgan-x4plus → 4）。
+ * 解析不出返回 null（调用方自行兜底）。
+ */
+function parseNativeScale(modelName) {
+  const m = modelName.match(/x\s*(\d+(?:\.\d+)?)/i)
+  if (!m) return null
+  return Math.round(parseFloat(m[1]))
 }
 
 /**
@@ -290,9 +302,15 @@ function modelParamCandidates(def, model, scale, denoise) {
     return [join(model, `x${scale}.param`)]
   }
   if (def.id === 'realesrgan') {
-    // 多倍率模型为 xxx-xN.param；固定倍率模型（realesrgan-x4plus 等）无倍率后缀，
-    // exe 内部按目标倍率缩放输出，任意倍率均可用
-    return [join(def.modelsSub, `${model}-x${scale}.param`), join(def.modelsSub, `${model}.param`)]
+    // 多倍率模型为 xxx-xN.param，精确匹配；
+    // 固定倍率模型（realesrgan-x4plus 等）仅在 目标倍率==原生倍率 时放行
+    // （非原生倍率会触发上游 exe 的 tile 错位 bug）
+    const candidates = [join(def.modelsSub, `${model}-x${scale}.param`)]
+    const native = parseNativeScale(model)
+    if (native === null || native === scale) {
+      candidates.push(join(def.modelsSub, `${model}.param`))
+    }
+    return candidates
   }
   return null
 }
@@ -316,6 +334,17 @@ function checkParams(engineId, params = {}) {
   const model = params.model || def.defaultModel
   // 与 image-pipeline.buildArgs 的默认降噪保持一致
   const denoise = params.denoise !== undefined ? params.denoise : (def.denoiseLevels?.[0] ?? -1)
+
+  // 固定倍率模型 + 非原生倍率：给出针对性提示（通用报错会误导用户去补模型文件）
+  if (def.id === 'realesrgan') {
+    const native = parseNativeScale(model)
+    if (native !== null && native !== scale && existsSync(join(engineDir.dir, def.modelsSub, `${model}.param`))) {
+      return {
+        ok: false,
+        error: `${def.name} 模型 ${model} 为固定 ${native}x 模型，不支持 ${scale}x（非原生倍率会触发上游引擎 tile 错位 bug）。请将倍率改为 ${native}x，或改用 realesr-animevideov3 等支持 ${scale}x 的模型`
+      }
+    }
+  }
 
   const rel = modelParamCandidates(def, model, scale, denoise)
   if (!rel) return { ok: true } // 未知命名规则，不校验
