@@ -1,0 +1,12 @@
+node_modules
+dist
+out
+release
+.DS_Store
+*.log
+.vite
+
+# 大体积资源（从 GitHub Release 下载，不入仓库）
+# 详见 README.md「资源准备」章节
+resources/engines
+resources/ffmpeg

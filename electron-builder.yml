@@ -1,0 +1,35 @@
+appId: com.xmsr.app
+productName: 星梦超分工具
+copyright: Copyright © 2026 XMSR
+directories:
+  output: release
+  buildResources: resources
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+extraResources:
+  - from: resources/engines
+    to: engines
+    filter: ['**/*']
+  - from: resources/ffmpeg
+    to: ffmpeg
+    filter: ['**/*']
+asarUnpack:
+  - '**/*.{node,dll}'
+  - node_modules/sharp/**
+  - node_modules/@img/**
+win:
+  target:
+    - nsis
+  icon: resources/icon.png
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 星梦超分工具
