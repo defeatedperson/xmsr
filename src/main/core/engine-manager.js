@@ -74,9 +74,9 @@ const ENGINE_DEFS = {
     builtin: true,
     exeName: 'rife-ncnn-vulkan.exe',
     dirName: 'rife-ncnn-vulkan',
-    modelsSub: 'rife-v4',
+    modelsSub: 'rife-v4.25',
     modelNaming: 'model-dir',
-    defaultModel: 'rife-v4',
+    defaultModel: 'rife-v4.25',
     supportedScales: [], // 插帧引擎，不适用倍率
     supportsDenoise: false,
     isInterp: true,

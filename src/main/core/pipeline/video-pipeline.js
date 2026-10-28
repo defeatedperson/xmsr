@@ -344,8 +344,8 @@ async function runVideoPipeline(opts, controller) {
       onProgress(0)
       const mult = Math.max(2, Math.min(8, Math.round(interp.targetFps / info.fps)))
       onLog(`阶段3/4：插帧（预期 ≥${interp.targetFps}fps，实际 ${mult}x → 约 ${Math.round(info.fps * mult)}fps）`)
-      // RIFE 模型路径：优先用用户选的，否则默认 rife-v4
-      const rifeModel = interp.model || 'rife-v4'
+      // RIFE 模型路径：优先用用户选的，否则默认 rife-v4.25（hzwer 官方推荐的通用最优版本）
+      const rifeModel = interp.model || 'rife-v4.25'
       await interpolateFrames(
         srFramesDir,
         interpFramesDir,

@@ -92,10 +92,10 @@ const licenses = [
   },
   {
     name: 'RIFE (ncnn-vulkan)',
-    author: 'hzwer (算法) / nihui (ncnn 移植)',
+    author: 'hzwer (算法/模型) / nihui (ncnn 移植) / TNTwise (v4.25/v4.26 移植)',
     license: 'MIT',
-    desc: '视频插帧',
-    url: 'https://github.com/nihui/rife-ncnn-vulkan'
+    desc: '视频插帧（默认 v4.25，含 v4.26）',
+    url: 'https://github.com/TNTwise/rife-ncnn-vulkan'
   },
   {
     name: 'CAIN (ncnn-vulkan)',
